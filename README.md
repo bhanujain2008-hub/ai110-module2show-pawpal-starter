@@ -1,3 +1,4 @@
+
 # PawPal+ (Module 2 Project)
 
 You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
@@ -44,14 +45,32 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+The following is actual output from running `python main.py`:
 
-```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+```text
+TODAY'S SCHEDULE (SORTED BY TIME)
+-------------------------------------------------------
+2026-10-18 07:00 | Luna   | Breakfast       | High
+2026-10-18 08:00 | Buddy  | Morning walk    | High
+2026-10-18 09:00 | Buddy  | Medication      | High
+2026-10-18 09:00 | Luna   | Grooming        | Low
+
+HIGH-PRIORITY TASKS FIRST
+-------------------------------------------------------
+2026-10-18 07:00 | Luna   | Breakfast       | High
+2026-10-18 08:00 | Buddy  | Morning walk    | High
+2026-10-18 09:00 | Buddy  | Medication      | High
+2026-10-18 09:00 | Luna   | Grooming        | Low
+
+BUDDY'S TASKS
+-------------------------------------------------------
+2026-10-18 08:00 | Buddy  | Morning walk    | High
+2026-10-18 09:00 | Buddy  | Medication      | High
+
+SCHEDULING CONFLICTS
+WARNING: Buddy and Luna have tasks at 09:00
+
+Recurring task created: Morning walk on 2026-10-19
 ```
 
 ## 🧪 Testing PawPal+
@@ -64,31 +83,42 @@ pytest
 pytest --cov
 ```
 
-Sample test output:
+Sample test output from `python -m pytest`:
 
+```text
+collected 7 items
+
+tests\test_pawpal.py .......                        [100%]
+
+=================== 7 passed in 0.13s ====================
 ```
-# Paste your pytest output here
-```
+
+The seven tests verify task completion, task addition, chronological sorting across pets, filtering, conflict detection, daily recurrence, and priority-based scheduling.
+
+**Confidence level: 4/5.** All seven tests passed. Additional edge-case tests would further improve reliability.
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.sort_by_priority()` | Sorts tasks chronologically or by High, Medium, Low priority, then time. |
+| Filtering | `Scheduler.filter_tasks()` | Filters tasks by pet name or completion status. |
+| Conflict handling | `Scheduler.detect_conflicts()` | Detects tasks across pets scheduled at exactly the same time. |
+| Recurring tasks | `Scheduler.handle_recurrence()` | Creates the next daily or weekly task when an existing task is completed. |
+
+The Scheduler retrieves tasks from `Owner.get_all_tasks()`, allowing its algorithms to operate across multiple pets.
+
+**Tradeoff:** Conflict detection checks identical start times rather than overlapping durations. The UI accepts task duration, but duration is not yet stored or used by the backend.
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+1. Launch the Streamlit app using `python -m streamlit run app.py`.
+2. Enter the owner's name and add pets, such as Luna (cat) and Mochi (dog).
+3. Add care tasks with a description, due date, time, priority, and frequency.
+4. Select sorting by Time or Priority, optionally filter by pet or completion status, and click **Generate schedule**.
+5. Review the generated schedule. Tasks scheduled at identical times produce a conflict warning.
+6. Select a pending task and click **Mark Complete**. Daily or weekly tasks automatically generate their next occurrence.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+The browser demonstration confirmed that multiple pets could be added and simultaneous tasks triggered a scheduling conflict warning.
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+**Screenshot or video (optional):** Not included; the walkthrough and CLI output document the demonstrated functionality.

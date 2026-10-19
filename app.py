@@ -1,7 +1,8 @@
 
 import streamlit as st
 from datetime import datetime, date, time
-from pawpal_system import Owner, Pet, Task, Scheduler
+from pawpal_system import Pet, Task, Scheduler
+from storage import save_data, load_data
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
@@ -40,7 +41,7 @@ At minimum, your system should:
 
 # Keep the owner and pets in memory between Streamlit reruns.
 if "owner" not in st.session_state:
-    st.session_state.owner = Owner("Jordan")
+    st.session_state.owner = load_data()
 
 owner = st.session_state.owner
 scheduler = Scheduler(owner)
@@ -64,6 +65,7 @@ with st.form("add_pet_form", clear_on_submit=True):
             st.warning("This pet already exists.")
         else:
             owner.add_pet(Pet(name, species))
+            save_data(owner)
             st.success(f"{name} added successfully!")
 
 if owner.pets:
@@ -116,9 +118,11 @@ if owner.pets:
                     description=task_title.strip(),
                     due_time=datetime.combine(due_date, due_time),
                     priority=priority.capitalize(),
-                    frequency=frequency
+                    frequency=frequency,
+                    duration_minutes=duration
                 )
                 pet.add_task(task)
+                save_data(owner)
                 st.success(f"Task added for {pet.name}!")
                 st.caption(f"Estimated duration: {duration} minutes")
 
@@ -170,6 +174,7 @@ if st.button("Generate schedule"):
                 "Pet": pet.name,
                 "Task": task.description,
                 "Due": task.due_time.strftime("%Y-%m-%d %H:%M"),
+                "Duration (minutes)": task.duration_minutes,
                 "Priority": task.priority,
                 "Frequency": task.frequency,
                 "Status": "Complete" if task.completed else "Pending"
@@ -193,9 +198,10 @@ if st.button("Generate schedule"):
             )
             for (pet1, task1), (pet2, task2) in conflicts:
                 st.write(
-                    f"⚠️ {pet1.name}: {task1.description} and "
+                    f"⚠️ {pet1.name}: {task1.description} "
+                    f"({task1.due_time:%Y-%m-%d %H:%M}) overlaps with "
                     f"{pet2.name}: {task2.description} "
-                    f"at {task1.due_time:%Y-%m-%d %H:%M}"
+                    f"({task2.due_time:%Y-%m-%d %H:%M})"
                 )
         else:
             st.success("No scheduling conflicts detected.")
@@ -225,6 +231,7 @@ if pending_tasks:
     if st.button("Mark Complete"):
         pet, task = task_options[selected]
         next_task = scheduler.handle_recurrence(pet, task)
+        save_data(owner)
 
         if next_task:
             st.success(
@@ -235,4 +242,3 @@ if pending_tasks:
             st.success("Task completed!")
 
         st.rerun()
-

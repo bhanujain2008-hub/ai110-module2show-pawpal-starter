@@ -88,14 +88,13 @@ Sample test output from `python -m pytest`:
 ```text
 collected 7 items
 
-tests\test_pawpal.py .......                        [100%]
-
-=================== 7 passed in 0.13s ====================
+tests\test_pawpal.py ...........                     [100%]
+=================== 11 passed in 0.09s ===================
 ```
 
-The seven tests verify task completion, task addition, chronological sorting across pets, filtering, conflict detection, daily recurrence, and priority-based scheduling.
+The eleven tests verify task completion, task addition, chronological sorting across pets, filtering, overlapping and non-overlapping scheduling, duration persistence and legacy JSON compatibility, daily recurrence, and priority-based scheduling.
 
-**Confidence level: 4/5.** All seven tests passed. Additional edge-case tests would further improve reliability.
+**Confidence level: 4/5.** All eleven tests passed, including overlap boundaries and legacy JSON compatibility.
 
 ## 📐 Smarter Scheduling
 
@@ -103,20 +102,24 @@ The seven tests verify task completion, task addition, chronological sorting acr
 |---------|-----------|-------|
 | Task sorting | `Scheduler.sort_by_time()`, `Scheduler.sort_by_priority()` | Sorts tasks chronologically or by High, Medium, Low priority, then time. |
 | Filtering | `Scheduler.filter_tasks()` | Filters tasks by pet name or completion status. |
-| Conflict handling | `Scheduler.detect_conflicts()` | Detects tasks across pets scheduled at exactly the same time. |
+| Conflict handling | `Scheduler.detect_conflicts()` | Detects overlapping task intervals across pets. |
 | Recurring tasks | `Scheduler.handle_recurrence()` | Creates the next daily or weekly task when an existing task is completed. |
 
 The Scheduler retrieves tasks from `Owner.get_all_tasks()`, allowing its algorithms to operate across multiple pets.
 
-**Tradeoff:** Conflict detection checks identical start times rather than overlapping durations. The UI accepts task duration, but duration is not yet stored or used by the backend.
+Tasks default to a duration of 20 minutes. Task durations are saved with the schedule, used to detect overlapping intervals, and default to 20 minutes when loading older JSON files.
+
+
+**JSON Persistence:** PawPal+ uses `storage.py` to save owner information, pets, and tasks to `pawpal_data.json`. The application automatically loads saved data when a new session starts and saves changes when pets or tasks are added or completed. The JSON file is excluded from GitHub using `.gitignore`. Saving and loading pets were verified across an application restart, and task data was verified in the JSON file.
 
 ## 📸 Demo Walkthrough
+
 
 1. Launch the Streamlit app using `python -m streamlit run app.py`.
 2. Enter the owner's name and add pets, such as Luna (cat) and Mochi (dog).
 3. Add care tasks with a description, due date, time, priority, and frequency.
 4. Select sorting by Time or Priority, optionally filter by pet or completion status, and click **Generate schedule**.
-5. Review the generated schedule. Tasks scheduled at identical times produce a conflict warning.
+5. Review the generated schedule. Tasks with overlapping intervals produce a conflict warning.
 6. Select a pending task and click **Mark Complete**. Daily or weekly tasks automatically generate their next occurrence.
 
 The browser demonstration confirmed that multiple pets could be added and simultaneous tasks triggered a scheduling conflict warning.

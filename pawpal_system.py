@@ -11,6 +11,7 @@ class Task:
     frequency: str = "once"
     completed: bool = False
     priority: str = "Medium"
+    duration_minutes: int = 20
 
     def mark_complete(self):
         """Mark this task as completed."""
@@ -81,14 +82,21 @@ class Scheduler:
         return tasks
 
     def detect_conflicts(self):
-        """Find tasks scheduled at exactly the same time."""
+        """Find tasks whose scheduled time intervals overlap."""
         tasks = self.sort_by_time()
         conflicts = []
 
         for i in range(len(tasks)):
+            task1 = tasks[i][1]
+            task1_end = task1.due_time + timedelta(
+                minutes=task1.duration_minutes
+            )
+
             for j in range(i + 1, len(tasks)):
-                if tasks[i][1].due_time == tasks[j][1].due_time:
-                    conflicts.append((tasks[i], tasks[j]))
+                task2 = tasks[j][1]
+                if task2.due_time >= task1_end:
+                    break
+                conflicts.append((tasks[i], tasks[j]))
 
         return conflicts
 
@@ -110,7 +118,8 @@ class Scheduler:
             description=task.description,
             due_time=task.due_time + interval,
             frequency=task.frequency,
-            priority=task.priority
+            priority=task.priority,
+            duration_minutes=task.duration_minutes
         )
         pet.add_task(next_task)
         return next_task
